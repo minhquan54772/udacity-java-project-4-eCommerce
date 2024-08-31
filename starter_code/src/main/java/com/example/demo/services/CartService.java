@@ -31,39 +31,37 @@ public class CartService {
 
     @Transactional
     public Cart addToCart(ModifyCartRequest request) {
-        Optional<User> user = userRepository.findByUsername(request.getUsername());
-        if (user.isEmpty()) {
-            throw new UserNotFoundException("User not found: " + request.getUsername());
-        }
-
-        Optional<Item> item = itemRepository.findById(request.getItemId());
-        if (item.isEmpty()) {
-            throw new ItemNotFoundException("Item not found: " + request.getItemId());
-        }
-
-        Cart cart = user.get().getCart();
+        Cart cart = this.getCart(request);
+        Item item = getItem(request);
         IntStream.range(0, request.getQuantity())
-                .forEach(i -> cart.addItem(item.get()));
+                .forEach(i -> cart.addItem(item));
         cartRepository.save(cart);
         return cart;
     }
 
     @Transactional
     public Cart removeFromCart(ModifyCartRequest request) {
+        Cart cart = this.getCart(request);
+        Item item = getItem(request);
+        IntStream.range(0, request.getQuantity())
+                .forEach(i -> cart.removeItem(item));
+        cartRepository.save(cart);
+        return cart;
+    }
+
+    private Cart getCart(ModifyCartRequest request) {
         Optional<User> user = userRepository.findByUsername(request.getUsername());
         if (user.isEmpty()) {
             throw new UserNotFoundException("User not found: " + request.getUsername());
         }
+        return user.get().getCart();
+    }
 
+    private Item getItem(ModifyCartRequest request) {
         Optional<Item> item = itemRepository.findById(request.getItemId());
         if (item.isEmpty()) {
             throw new ItemNotFoundException("Item not found: " + request.getItemId());
         }
-
-        Cart cart = user.get().getCart();
-        IntStream.range(0, request.getQuantity())
-                .forEach(i -> cart.removeItem(item.get()));
-        cartRepository.save(cart);
-        return cart;
+        return item.get();
     }
 }

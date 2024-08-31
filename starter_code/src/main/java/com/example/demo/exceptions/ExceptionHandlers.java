@@ -24,8 +24,12 @@ public class ExceptionHandlers {
     }
 
     @ExceptionHandler(ItemNotFoundException.class)
-    public ResponseEntity<String> handleItemNotFoundException(ItemNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    public ResponseEntity<BaseResponse<String>> handleItemNotFoundException(ItemNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new BaseResponse<>(false, ex.getMessage()));
     }
 
+    @ExceptionHandler(UserPasswordException.class)
+    public ResponseEntity<BaseResponse<String>> handleUserPasswordException(UserPasswordException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new BaseResponse<>(false, ex.getMessage()));
+    }
 }

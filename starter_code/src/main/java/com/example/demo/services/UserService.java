@@ -1,25 +1,31 @@
 package com.example.demo.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import com.example.demo.exceptions.UserAlreadyExistsException;
+import com.example.demo.exceptions.UserNotFoundException;
+import com.example.demo.exceptions.UserPasswordException;
 import com.example.demo.model.persistence.Cart;
 import com.example.demo.model.persistence.User;
 import com.example.demo.model.persistence.repositories.CartRepository;
 import com.example.demo.model.persistence.repositories.UserRepository;
 import com.example.demo.model.requests.CreateUserRequest;
-import com.example.demo.exceptions.UserNotFoundException;
-import com.example.demo.exceptions.UserAlreadyExistsException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final CartRepository cartRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    @Autowired
-    private CartRepository cartRepository;
+    public UserService(UserRepository userRepository, CartRepository cartRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+        this.userRepository = userRepository;
+        this.cartRepository = cartRepository;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    }
 
     public User findById(Long id) {
         Optional<User> userById = userRepository.findById(id);
@@ -45,6 +51,20 @@ public class UserService {
         }
         User user = new User();
         user.setUsername(createUserRequest.getUsername());
+
+        if (createUserRequest.getPassword() == null || createUserRequest.getPassword().isEmpty()) {
+            throw new UserPasswordException("You must enter your password to create a new user");
+        }
+
+        if (createUserRequest.getPassword().length() < 8) {
+            throw new UserPasswordException("Password must be at least 8 characters");
+        }
+
+        if (!Objects.equals(createUserRequest.getPassword(), createUserRequest.getConfirmPassword())) {
+            throw new UserPasswordException("Passwords do not match");
+        }
+
+        user.setPassword(bCryptPasswordEncoder.encode(createUserRequest.getPassword()));
         Cart cart = new Cart();
         cartRepository.save(cart);
         user.setCart(cart);

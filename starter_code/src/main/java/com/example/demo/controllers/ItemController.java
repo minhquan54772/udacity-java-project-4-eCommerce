@@ -1,18 +1,14 @@
 package com.example.demo.controllers;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.model.persistence.Item;
+import com.example.demo.services.ItemService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.exceptions.ItemNotFoundException;
-import com.example.demo.model.persistence.Item;
-import com.example.demo.services.ItemService;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/item")
